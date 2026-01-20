@@ -560,30 +560,125 @@
   
   <script src="js/main.js"></script>
 
-    <!-- SVG Size Controller -->
-<div id="svg-size-controller" style="position: fixed; bottom: 20px; right: 20px; background: rgba(103, 93, 222, 0.95); padding: 20px; border-radius: 10px; z-index: 9999; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-  <label style="color: white; font-weight: bold; display: block; margin-bottom: 10px;">SVG Size Control</label>
-  <input type="range" id="svg-size-slider" min="25" max="150" value="50" style="width: 200px; cursor: pointer;">
-  <span id="svg-size-value" style="color: white; margin-left: 10px; font-weight: bold;">50%</span>
-</div>
+    
+<!-- Individual SVG Drag & Resize Controller -->
+<style>
+.svg-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: move;
+}
+.svg-wrapper.dragging {
+  opacity: 0.7;
+  z-index: 10000;
+}
+.svg-controls {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background: rgba(103, 93, 222, 0.95);
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: none;
+  gap: 5px;
+}
+.svg-wrapper:hover .svg-controls {
+  display: flex;
+}
+.svg-control-btn {
+  background: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #675dde;
+}
+.svg-control-btn:hover {
+  background: #f0f0f0;
+}
+</style>
 
 <script>
-// SVG Size Controller Script
-const slider = document.getElementById('svg-size-slider');
-const valueDisplay = document.getElementById('svg-size-value');
-
-slider.addEventListener('input', function() {
-  const size = this.value;
-  valueDisplay.textContent = size + '%';
-  
-  // Find all SVG images in the programs section
+// Make SVG images draggable and resizable individually
+document.addEventListener('DOMContentLoaded', function() {
   const svgImages = document.querySelectorAll('img[src*="undraw_"]');
   
-  svgImages.forEach(img => {
-    img.style.width = size + '%';
+  svgImages.forEach((img, index) => {
+    // Wrap each SVG in a wrapper div
+    const wrapper = document.createElement('div');
+    wrapper.className = 'svg-wrapper';
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = img.offsetLeft + 'px';
+    wrapper.style.top = img.offsetTop + 'px';
+    
+    // Create controls
+    const controls = document.createElement('div');
+    controls.className = 'svg-controls';
+    controls.innerHTML = `
+      <button class="svg-control-btn" data-action="smaller">-</button>
+      <button class="svg-control-btn" data-action="bigger">+</button>
+      <button class="svg-control-btn" data-action="reset">Reset</button>
+    `;
+    
+    // Insert wrapper before image
+    img.parentNode.insertBefore(wrapper, img);
+    wrapper.appendChild(img);
+    wrapper.appendChild(controls);
+    
+    // Store original size
+    let currentWidth = img.offsetWidth;
+    
+    // Control buttons
+    controls.addEventListener('click', (e) => {
+      if (e.target.classList.contains('svg-control-btn')) {
+        const action = e.target.dataset.action;
+        
+        if (action === 'bigger') {
+          currentWidth *= 1.2;
+          img.style.width = currentWidth + 'px';
+        } else if (action === 'smaller') {
+          currentWidth *= 0.8;
+          img.style.width = currentWidth + 'px';
+        } else if (action === 'reset') {
+          img.style.width = '';
+          currentWidth = img.offsetWidth;
+        }
+      }
+    });
+    
+    // Drag functionality
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+    
+    img.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      wrapper.classList.add('dragging');
+      startX = e.clientX;
+      startY = e.clientY;
+      initialX = wrapper.offsetLeft;
+      initialY = wrapper.offsetTop;
+      e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        wrapper.style.left = (initialX + dx) + 'px';
+        wrapper.style.top = (initialY + dy) + 'px';
+      }
+    });
+    
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        wrapper.classList.remove('dragging');
+      }
+    });
   });
 });
 </script>
-    
-  </body>
+
+</body>
 </html>
