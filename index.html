@@ -559,6 +559,31 @@
 
   
   <script src="js/main.js"></script>
+
+    <!-- SVG Size Controller -->
+<div id="svg-size-controller" style="position: fixed; bottom: 20px; right: 20px; background: rgba(103, 93, 222, 0.95); padding: 20px; border-radius: 10px; z-index: 9999; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  <label style="color: white; font-weight: bold; display: block; margin-bottom: 10px;">SVG Size Control</label>
+  <input type="range" id="svg-size-slider" min="25" max="150" value="50" style="width: 200px; cursor: pointer;">
+  <span id="svg-size-value" style="color: white; margin-left: 10px; font-weight: bold;">50%</span>
+</div>
+
+<script>
+// SVG Size Controller Script
+const slider = document.getElementById('svg-size-slider');
+const valueDisplay = document.getElementById('svg-size-value');
+
+slider.addEventListener('input', function() {
+  const size = this.value;
+  valueDisplay.textContent = size + '%';
+  
+  // Find all SVG images in the programs section
+  const svgImages = document.querySelectorAll('img[src*="undraw_"]');
+  
+  svgImages.forEach(img => {
+    img.style.width = size + '%';
+  });
+});
+</script>
     
   </body>
 </html>
